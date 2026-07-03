@@ -1,7 +1,7 @@
 ---
-title: "pdf2wordx Configuration and Programmatic Usage"
+title: "pdf2wordx Configuration: API Reference and Usage Guide"
 sidebarTitle: "Configuration"
-description: "Configure pdf2wordx window settings and use the run() entry point or App class programmatically in your own Python scripts."
+description: "Configure pdf2wordx window dimensions and colors, and use the run() entry point or App and Window classes programmatically in Python scripts."
 ---
 
 pdf2wordx is primarily a desktop GUI application intended to be launched from the command line, but it also exposes a `run()` function and a class-based API that advanced users can import and call from their own Python scripts. This allows embedding or extending the application window without invoking a subprocess.
@@ -67,7 +67,7 @@ App(root: Tk, width: int = 300, height: int = 300, bgColor: str = 'green', title
 **Constructor signature:**
 
 ```python
-Window(root: Tk, width: int = 300, height: int = 300, bgColor: str = 'green', title: str = 'Window', resizable: list = [False, False])
+Window(root: any, width: int = 300, height: int = 300, bgColor: str = 'green', title: str = 'Window', resizable: list = [False, False])
 ```
 
 On instantiation, `Window` sets the background color, title, and geometry string on the root, then calls its private `__centerWindow()` method to compute the correct screen offset.
@@ -92,10 +92,10 @@ A private method that computes a centered position for the window based on the c
 **Constructor signature:**
 
 ```python
-Widgets(master: Tk, elements: list)
+Widgets(master: any, elements: list)
 ```
 
-<ParamField path="master" type="Tk" required>
+<ParamField path="master" type="any" required>
   The parent Tkinter window or frame that will contain the created widgets.
 </ParamField>
 

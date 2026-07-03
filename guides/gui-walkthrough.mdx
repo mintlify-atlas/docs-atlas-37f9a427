@@ -1,7 +1,7 @@
 ---
-title: "GUI Walkthrough: Every Control in pdf2wordx"
+title: "GUI Walkthrough: All 12 Controls in pdf2wordx Explained"
 sidebarTitle: "GUI Walkthrough"
-description: "A complete tour of the pdf2wordx interface — every button, label, and entry field explained with its purpose and behavior."
+description: "A complete tour of every widget in the pdf2wordx Tkinter window — all 12 buttons, labels, and the entry field with their exact colors and behaviors."
 ---
 
 pdf2wordx presents a clean, purposefully compact interface built entirely with Python's Tkinter toolkit. The main window is a fixed **500×300 pixel** frame with a deep navy background (`#001223`) that cannot be resized by the user. All twelve UI elements — labels, buttons, and a single entry field — are positioned using Tkinter's absolute `place` geometry manager with relative coordinates, giving the layout precise and predictable placement across operating systems. Every widget is created and managed by the `Widgets` class in `files/interfaz.py`, while the `App` class in `_pdf2wordx.py` wires each interactive element to its corresponding action.
@@ -129,7 +129,7 @@ The three primary action buttons are aligned horizontally at approximately 35% f
 
   The **"Convertir"** (Convert) button is the final action trigger. It remains **disabled** until both a PDF file and an output directory have been chosen. Clicking it spawns a background `threading.Thread` that runs `asyncio.run(self.funcs._convertFile(buttons))`, keeping the Tkinter UI responsive while the conversion is in progress.
 
-  Upon completion, both the "Open File" and "Convert" buttons are disabled to prevent duplicate conversions. The output directory path label is also updated to reflect the chosen save location.
+  Upon completion, both the **"Elegir Directorio"** (Choose Directory) and **"Convertir"** (Convert) buttons are disabled to prevent duplicate conversions. The output directory path label is also updated to reflect the chosen save location.
 
   ```python
   {'text':'Convertir', 'bg':'#d1ff00', 'width':15, 'pady':5, 'padx':3,

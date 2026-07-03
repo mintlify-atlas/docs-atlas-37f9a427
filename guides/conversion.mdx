@@ -1,5 +1,5 @@
 ---
-title: "Converting PDFs to Word Documents with pdf2wordx"
+title: "Converting PDF Files to Word Documents with pdf2wordx"
 sidebarTitle: "Conversion"
 description: "Step-by-step guide to converting a PDF to .docx with pdf2wordx, including output naming, directory selection, and what to expect from the result."
 ---
@@ -126,7 +126,7 @@ Running the conversion in a background thread via `threading.Thread` ensures the
 
 ## After conversion
 
-Once a conversion completes successfully, the `Funcs._disableButton()` method disables both the **"Abrir Archivo"** and **"Convertir"** buttons:
+Once a conversion completes successfully, the `Funcs._disableButton()` method disables both the **"Elegir Directorio"** (Choose Directory) and **"Convertir"** (Convert) buttons:
 
 ```python
 # From files/functions.py — Funcs._disableButton()
