@@ -1,0 +1,57 @@
+---
+title: "pdf2wordx: PDF to Word Converter for Desktop"
+sidebarTitle: "Introduction"
+description: "pdf2wordx is a free, open-source Python desktop app with a Tkinter GUI that converts PDF files to editable .docx Word documents in two clicks."
+---
+
+pdf2wordx is a free, open-source Python desktop application that converts PDF files into editable Microsoft Word (`.docx`) documents — right from your desktop, with no cloud uploads, no subscriptions, and no command-line expertise required. Built with a Tkinter graphical interface, it is designed for anyone who regularly works with PDFs and needs to edit, reformat, or repurpose their content in Word: students, writers, office workers, and developers alike. Simply open a PDF, choose an output directory, and let pdf2wordx handle the rest.
+
+<CardGroup cols={2}>
+  <Card title="Two-Click Conversion" icon="bolt">
+    Select your PDF and output directory, then click **Convert**. The entire workflow is designed to take seconds, not minutes, requiring no technical knowledge to operate.
+  </Card>
+  <Card title="PyPI Install" icon="box">
+    Install pdf2wordx instantly with a single `pip install pdf2wordx` command. No manual dependency juggling — pip handles everything automatically.
+  </Card>
+  <Card title="Custom File Naming" icon="pencil">
+    Type any name into the filename entry field before converting. The field is pre-populated with the default value `document-pdf2wordx` so you can start immediately or customise as needed.
+  </Card>
+  <Card title="Cross-Platform Support" icon="globe">
+    Built on Python and Tkinter, pdf2wordx runs on Windows, macOS, and Linux without any platform-specific configuration. If Python 3.8–3.12 is installed, you are ready to go.
+  </Card>
+</CardGroup>
+
+## How it works
+
+pdf2wordx uses the [pdf2docx](https://github.com/ArtifexSoftware/pdf2docx) library (`pdf2docx==0.5.8`) as its conversion engine. When you click the **Convert** button, the application instantiates a `Converter` object with your chosen PDF path, calls `converter.convert()` to produce the `.docx` file, and then closes the converter to release file handles.
+
+To keep the graphical interface responsive during conversion, the operation is executed inside a Python `Thread` that wraps an `asyncio.run()` call. This async threading model prevents the Tkinter event loop from blocking — so the window remains interactive while a large PDF is being processed. A status dialog is shown before conversion begins, and a success dialog appears once the file has been written to disk.
+
+<Note>
+  The quality of the output `.docx` file depends entirely on the complexity of the original PDF. Documents with intricate layouts, embedded fonts, or unusual colour profiles may produce output with colour inconsistencies, misaligned text, or — in rare cases — partial content loss. This is a known limitation of PDF-to-Word conversion in general, not a bug specific to pdf2wordx.
+</Note>
+
+## Supported environments
+
+pdf2wordx targets the following Python versions, as declared in `pyproject.toml`:
+
+| Python version | Supported |
+|---|---|
+| 3.8 | ✅ |
+| 3.9 | ✅ |
+| 3.10 | ✅ |
+| 3.11 | ✅ |
+| 3.12 | ✅ |
+| 3.13+ | ❌ Not yet supported |
+
+The application depends on two third-party packages pinned in `requirements.txt`:
+
+- **`pdf2docx==0.5.8`** — the core PDF-to-Word conversion engine.
+- **`chromologger==0.1.8`** — a lightweight logging utility used for error and event logging throughout the application.
+
+Tkinter is part of the Python standard library and requires no separate pip installation on most platforms. See the [Installation](/installation) guide for notes on Linux distributions where Tkinter may need to be installed via a system package manager.
+
+## Next steps
+
+- [Install pdf2wordx](/installation) — set up your environment and verify the installation.
+- [Quickstart](/quickstart) — convert your first PDF to `.docx` in under a minute.

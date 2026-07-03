@@ -1,0 +1,136 @@
+---
+title: "Install pdf2wordx on Windows, macOS, and Linux"
+sidebarTitle: "Installation"
+description: "Install the pdf2wordx PDF-to-Word converter via pip. Covers PyPI install, virtual environments, and verifying the install with a test launch."
+---
+
+pdf2wordx is published on [PyPI](https://pypi.org/project/pdf2wordx/) and can be installed with a single `pip` command on any supported platform. The package bundles all Python-level dependencies automatically — `pdf2docx` for the conversion engine and `chromologger` for logging — so there is nothing extra to configure after the install completes. Whether you are on Windows, macOS, or Linux, the workflow is identical: install once, then launch the GUI directly from your terminal.
+
+<Note>
+  pdf2wordx requires **Python 3.8, 3.9, 3.10, 3.11, or 3.12**. Python 3.13 and above are not yet supported. Run `python --version` to confirm your version before installing.
+</Note>
+
+## Primary install command
+
+The fastest way to get started is a direct pip install:
+
+```bash
+pip install pdf2wordx
+```
+
+This installs `pdf2wordx==2.1.1` along with its two dependencies: `pdf2docx==0.5.8` and `chromologger==0.1.8`.
+
+<Tip>
+  Using a virtual environment keeps pdf2wordx and its dependencies isolated from your global Python installation. This prevents version conflicts with other projects and makes it easy to uninstall cleanly later. The steps below show you how.
+</Tip>
+
+## Step-by-step installation
+
+<Steps>
+  <Step title="Create a virtual environment (recommended)">
+    Creating a virtual environment is optional but strongly recommended. Use the tab for your operating system below.
+
+    <Tabs>
+      <Tab title="Windows">
+        Open **Command Prompt** or **PowerShell** and run:
+
+        ```bash
+        python -m venv .venv
+        .venv\Scripts\activate
+        ```
+
+        Once activated, your prompt will be prefixed with `(.venv)` to confirm the environment is active.
+      </Tab>
+      <Tab title="macOS">
+        Open **Terminal** and run:
+
+        ```bash
+        python3 -m venv .venv
+        source .venv/bin/activate
+        ```
+
+        Once activated, your prompt will be prefixed with `(.venv)`.
+      </Tab>
+      <Tab title="Linux">
+        Open your terminal emulator and run:
+
+        ```bash
+        python3 -m venv .venv
+        source .venv/bin/activate
+        ```
+
+        Once activated, your prompt will be prefixed with `(.venv)`.
+
+        **Tkinter note:** On some Linux distributions Tkinter is not bundled with the system Python and must be installed separately. On Ubuntu or Debian-based systems:
+
+        ```bash
+        sudo apt install python3-tk
+        ```
+
+        On Fedora / Red Hat-based systems:
+
+        ```bash
+        sudo dnf install python3-tkinter
+        ```
+
+        Tkinter is part of the Python standard library and does **not** need to be installed via pip — only via your system package manager when it is missing from the Python build.
+      </Tab>
+    </Tabs>
+  </Step>
+
+  <Step title="Install pdf2wordx via pip">
+    With your virtual environment active (or using your global Python environment), run:
+
+    ```bash
+    pip install pdf2wordx
+    ```
+
+    pip will download and install `pdf2wordx` together with `pdf2docx==0.5.8` and `chromologger==0.1.8`. The install typically completes in under a minute on a standard internet connection.
+
+    To install a specific version explicitly:
+
+    ```bash
+    pip install pdf2wordx==2.1.1
+    ```
+  </Step>
+
+  <Step title="Verify the installation">
+    Once the install finishes, confirm that the `pdf2wordx` command is available by launching the application directly from your terminal:
+
+    ```bash
+    pdf2wordx
+    ```
+
+    If the installation was successful, the **PDF2WORDX** graphical interface will open immediately. No further configuration is needed. If the command is not found, ensure that your virtual environment is activated and that the Python `Scripts` (Windows) or `bin` (macOS/Linux) directory is on your `PATH`.
+  </Step>
+</Steps>
+
+## Dependency overview
+
+| Package | Version | Purpose |
+|---|---|---|
+| `pdf2docx` | `==0.5.8` | Core PDF-to-Word conversion engine |
+| `chromologger` | `==0.1.8` | Application event and error logging |
+
+Both packages are installed automatically by pip and require no manual setup.
+
+## Tkinter on Linux
+
+Tkinter ships as part of the Python standard library on Windows and macOS. On Linux, however, some distributions package it separately from the main Python install. If you see an error such as `ModuleNotFoundError: No module named 'tkinter'` when launching `pdf2wordx`, install the system package for your distribution:
+
+```bash
+# Ubuntu / Debian
+sudo apt install python3-tk
+
+# Fedora / CentOS / RHEL
+sudo dnf install python3-tkinter
+
+# Arch Linux
+sudo pacman -S tk
+```
+
+After installing Tkinter, run `pdf2wordx` again and the GUI will start normally.
+
+## Next steps
+
+Now that pdf2wordx is installed, head over to the [Quickstart](/quickstart) guide to convert your first PDF to a `.docx` file in minutes.

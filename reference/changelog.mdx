@@ -1,0 +1,98 @@
+---
+title: "pdf2wordx Version History and Release Notes"
+sidebarTitle: "Changelog"
+description: "Release history for pdf2wordx. Current stable version is 2.1.1, published on PyPI with Python 3.8–3.12 support."
+---
+
+pdf2wordx follows semantic versioning and is published to PyPI under the package name `pdf2wordx`. Each version is also tagged in the GitHub repository and, for Windows users, compiled `.exe` builds are provided as GitHub release assets. The history below covers all known releases from the initial alpha through the current stable version.
+
+## Version History
+
+### v2.1.1 — Current Stable
+
+<CardGroup cols={2}>
+  <Card title="Development Status" icon="circle-check">
+    Production / Stable (`Development Status :: 5 - Production/Stable`)
+  </Card>
+  <Card title="Python Support" icon="python">
+    CPython 3.8, 3.9, 3.10, 3.11, 3.12
+  </Card>
+  <Card title="Install" icon="download">
+    `pip install pdf2wordx`
+  </Card>
+  <Card title="Entry Point" icon="terminal">
+    `pdf2wordx` launches the GUI directly from the command line
+  </Card>
+</CardGroup>
+
+**Features in this release:**
+
+- **Main interface** — fixed-size window (500 × 300 px) with a dark navy (`#001223`) background, file selection, output directory selection, custom output filename entry, and a one-click **Convertir** button.
+- **OSL button** — opens an in-app dialog displaying the Open Source Licenses NOTICE, crediting the pdf2docx (ArtifexSoftware) team under AGPL v3.0.
+- **Help dialog (Ayuda)** — opens an in-app dialog with usage instructions sourced from the bundled help file.
+- **Background conversion** — the PDF-to-DOCX conversion runs in a dedicated `Thread` with `asyncio` to keep the GUI responsive during long conversions.
+- **Error logging** — all exceptions are recorded to `log.log` via `chromologger`.
+- **Favicon** — custom `.ico` icon shown in the window title bar.
+
+---
+
+### v2.0.1
+
+Previous stable release. Two screenshots are preserved in the README showing the updated interface introduced in this version. Represents an incremental refinement over v2.0.0.
+
+---
+
+### v2.0.0
+
+Introduced the multi-image interface. The README documents five distinct screenshots for this version, indicating a significant UI redesign compared to the v1.0 Alpha. This was the first version to use the current layout with labeled status fields for the selected PDF path, output filename, and output directory.
+
+---
+
+### v1.0 Alpha
+
+The initial public release of pdf2wordx. Three screenshots are preserved in the README for this version. Established the core concept of a Tkinter-based PDF-to-DOCX converter built around the `pdf2docx` library.
+
+---
+
+## Downloading Releases
+
+Compiled `.exe` builds for Windows are published as assets attached to GitHub releases. These allow Windows users to run pdf2wordx without installing Python.
+
+<Card title="GitHub Releases" icon="github" href="https://github.com/dev2forge/pdf2wordx/releases/">
+  Download pre-compiled Windows `.exe` builds and view the full release history at the pdf2wordx GitHub releases page.
+</Card>
+
+To install from source instead, clone the repository and install the dependencies manually:
+
+```bash
+git clone https://github.com/tutosrive/pdf2wordx.git
+cd pdf2wordx
+pip install -r requirements.txt
+python ./src/pdf2wordx/_pdf2wordx.py
+```
+
+---
+
+## PyPI Package
+
+The recommended installation method for all platforms is via pip:
+
+```bash
+pip install pdf2wordx
+```
+
+After installation, launch the GUI with:
+
+```bash
+pdf2wordx
+```
+
+<Card title="pdf2wordx on PyPI" icon="box" href="https://pypi.org/project/pdf2wordx/">
+  View package metadata, release history, and download statistics at [https://pypi.org/project/pdf2wordx/](https://pypi.org/project/pdf2wordx/).
+</Card>
+
+---
+
+<Note>
+  pdf2wordx is also mirrored on SourceForge for users who prefer that distribution channel. Binary builds and source archives are available at [https://sourceforge.net/projects/pdf-to-word-docx/](https://sourceforge.net/projects/pdf-to-word-docx/).
+</Note>

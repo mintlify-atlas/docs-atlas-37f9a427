@@ -1,0 +1,128 @@
+---
+title: "pdf2wordx Configuration and Programmatic Usage"
+sidebarTitle: "Configuration"
+description: "Configure pdf2wordx window settings and use the run() entry point or App class programmatically in your own Python scripts."
+---
+
+pdf2wordx is primarily a desktop GUI application intended to be launched from the command line, but it also exposes a `run()` function and a class-based API that advanced users can import and call from their own Python scripts. This allows embedding or extending the application window without invoking a subprocess.
+
+## The `run()` Entry Point
+
+The `run()` function defined in `_pdf2wordx.py` is the registered console-scripts entry point for the package. When you run `pdf2wordx` in a terminal after installation, Python calls this function directly. It creates a `Tk()` root window, instantiates the `App` class with the application's default settings, and then starts the Tkinter event loop via `app.loopWindow()`.
+
+```python
+from pdf2wordx import run
+
+run()  # Opens the GUI
+```
+
+Internally, `run()` is equivalent to:
+
+```python
+from tkinter import Tk
+from pdf2wordx._pdf2wordx import App
+
+app = App(Tk(), 500, 300, '#001223', 'PDF2WORDX', [False, False])
+app.loopWindow()
+```
+
+## The `App` Class
+
+`App` is the main application class. It extends `Window` (from `interfaz.py`) and wires together all GUI widgets, button commands, and conversion logic. You can instantiate it directly if you need to embed it into a larger Tkinter application or override its default parameters.
+
+**Constructor signature:**
+
+```python
+App(root: Tk, width: int = 300, height: int = 300, bgColor: str = 'green', title: str = 'Window', resizable: list = [False, False])
+```
+
+<ParamField path="root" type="Tk" required>
+  The Tkinter root window instance. Pass the result of `Tk()` here. This object is used as the master container for all widgets.
+</ParamField>
+
+<ParamField path="width" type="int" default="300">
+  Window width in pixels. The default value from `Window` is `300`; pdf2wordx itself uses `500` to accommodate its layout.
+</ParamField>
+
+<ParamField path="height" type="int" default="300">
+  Window height in pixels. pdf2wordx uses `300`, which matches the class default.
+</ParamField>
+
+<ParamField path="bgColor" type="str" default="'green'">
+  Background color of the root window expressed as a hex color string or Tkinter color name. pdf2wordx uses `'#001223'` (a deep navy blue).
+</ParamField>
+
+<ParamField path="title" type="str" default="'Window'">
+  Text displayed in the window title bar. pdf2wordx sets this to `'PDF2WORDX'`.
+</ParamField>
+
+<ParamField path="resizable" type="list" default="[False, False]">
+  A two-element list controlling whether the window can be resized along each axis: `[x_resizable, y_resizable]`. pdf2wordx passes `[False, False]` to produce a fixed-size window.
+</ParamField>
+
+## The `Window` Base Class
+
+`App` inherits from `Window`, which lives in `files/interfaz.py`. `Window` is responsible for configuring and centering the root window on screen. It accepts the same constructor parameters as `App`.
+
+**Constructor signature:**
+
+```python
+Window(root: Tk, width: int = 300, height: int = 300, bgColor: str = 'green', title: str = 'Window', resizable: list = [False, False])
+```
+
+On instantiation, `Window` sets the background color, title, and geometry string on the root, then calls its private `__centerWindow()` method to compute the correct screen offset.
+
+### `loopWindow()`
+
+Starts the Tkinter main event loop by calling `root.mainloop()`. This method blocks until the window is closed.
+
+```python
+app = App(Tk(), 500, 300, '#001223', 'PDF2WORDX', [False, False])
+app.loopWindow()  # Blocks here until the user closes the window
+```
+
+### `__centerWindow()`
+
+A private method that computes a centered position for the window based on the current screen dimensions. It reads `root.winfo_screenwidth()` and `root.winfo_screenheight()`, then calculates the pixel offset so the window appears in the middle of the display. The result is appended to the geometry string passed to `root.geometry()`. This method is called automatically during `__init__` and does not need to be invoked manually.
+
+## The `Widgets` Class
+
+`Widgets`, also defined in `files/interfaz.py`, is a factory helper that creates and places multiple Tkinter widgets in a single call. `App` uses it to build all twelve UI elements (labels, buttons, and an entry field) from parallel option lists.
+
+**Constructor signature:**
+
+```python
+Widgets(master: Tk, elements: list)
+```
+
+<ParamField path="master" type="Tk" required>
+  The parent Tkinter window or frame that will contain the created widgets.
+</ParamField>
+
+<ParamField path="elements" type="list" required>
+  A list of Tkinter widget classes (e.g., `[Label, Button, Entry]`) that defines how many widgets to create and in what order.
+</ParamField>
+
+### `widgetsCreate(itemsOptions, package, optionsPack)`
+
+Iterates over the `elements` list and instantiates each widget class with the corresponding options dictionary, then places it using the specified geometry manager and placement options.
+
+```python
+widgets.widgetsCreate(
+    itemsOptions=[{'text': 'Click Me', 'bg': 'yellow'}, ...],
+    package=['place', 'place', ...],
+    optionsPack=[{'relx': 0.1, 'rely': 0.1}, ...]
+)
+```
+
+### `getText(pos: int)`
+
+Returns the current string value from the widget at index `pos` inside the internal `widgetsList`. Designed for use with `Entry` widgets.
+
+```python
+user_input = widgets.getText(4)  # Gets text from the 5th widget (index 4)
+```
+
+<Note>
+  Direct instantiation of `App`, `Window`, or `Widgets` is an advanced use case. The vast majority of users should launch pdf2wordx by running `pdf2wordx` in a terminal after installing the package with `pip install pdf2wordx`.
+</Note>

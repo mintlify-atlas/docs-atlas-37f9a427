@@ -1,0 +1,60 @@
+{
+  "projectType": "general",
+  "projectName": "pdf2wordx",
+  "projectDescription": "A Python desktop application with a Tkinter GUI for converting PDF files to editable Word (.docx) documents in just a few clicks.",
+  "theme": "almond",
+  "primaryColor": "#2673d9",
+  "lightColor": "#54b8e9",
+  "darkColor": null,
+  "navigation": {
+    "groups": [
+      {
+        "group": "Get Started",
+        "pages": [
+          "introduction",
+          "installation",
+          "quickstart"
+        ]
+      },
+      {
+        "group": "Using pdf2wordx",
+        "pages": [
+          "guides/gui-walkthrough",
+          "guides/conversion",
+          "guides/local-development"
+        ]
+      },
+      {
+        "group": "Reference",
+        "pages": [
+          "reference/configuration",
+          "reference/dependencies",
+          "reference/troubleshooting",
+          "reference/changelog"
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "PDF to DOCX conversion in 2 clicks via a Tkinter graphical interface",
+    "Install and launch from PyPI with a single command (pip install pdf2wordx)",
+    "Custom output file naming and directory selection",
+    "Threaded async conversion to keep the UI responsive",
+    "Built-in help dialog and open-source license notice",
+    "Logging via chromologger for error tracing",
+    "Cross-platform support (Python 3.8–3.12)"
+  ],
+  "publicApiSurface": [
+    "pdf2wordx (CLI entry point — launches GUI)",
+    "App class (main application window, extends Window)",
+    "Window class (base Tkinter window abstraction in interfaz.py)",
+    "Widgets class (widget factory/manager in interfaz.py)",
+    "Funcs class (core conversion logic in functions.py)",
+    "Funcs._askFile() — opens PDF file picker dialog",
+    "Funcs._askDirOut() — opens output directory picker dialog",
+    "Funcs._fileNameOut() — sets the output .docx filename",
+    "Funcs._convertFile() — async PDF-to-DOCX conversion via pdf2docx",
+    "Funcs.msgbox() — displays info dialogs from text files",
+    "run() — programmatic entry point to launch the app"
+  ]
+}

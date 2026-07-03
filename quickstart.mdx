@@ -1,47 +1,89 @@
 ---
-title: "Quickstart"
-description: "Begin with a guide on the fastest path to a successful outcome"
+title: "Get Started with pdf2wordx: Convert a PDF in Minutes"
+sidebarTitle: "Quickstart"
+description: "Convert your first PDF to an editable Word document using pdf2wordx. From install to finished .docx file in four steps."
 ---
 
-Describe how someone begins using your product. What is the first thing they need to do? Are there any prerequisites?
-
-A quickstart should take someone from zero to using your product. They'll get a quick win and a sense of what they can accomplish.
-
-## Prerequisites
-
-Before you begin, you must have:
-
-- Requirement one (for example, Node.js 18+, a free account, an API key)
-- Requirement two (for example, a compatible device, a compatible browser, a compatible operating system)
-
-## Get started
+This guide walks you through everything you need to convert your first PDF into an editable Word document using pdf2wordx. By the end, you will have installed the application, launched its graphical interface, and produced a ready-to-edit `.docx` file — all in under a minute. No prior experience with Python or command-line tools is required beyond the initial `pip install`.
 
 <Steps>
-  <Step title="Install">
-    Describe how to install your product or sign up.
+  <Step title="Install pdf2wordx">
+    If you have not already installed pdf2wordx, open your terminal and run:
 
     ```bash
-    npm install your-package
+    pip install pdf2wordx
     ```
+
+    pip will install `pdf2wordx` version 2.1.1 along with its dependencies (`pdf2docx==0.5.8` and `chromologger==0.1.8`) automatically. For virtual environment setup and platform-specific notes, see the [Installation](/installation) guide.
   </Step>
-  <Step title="Configure">
-    Describe any setup or configuration needed before first use.
+
+  <Step title="Launch the application">
+    Once installed, start the graphical interface by running the following command in your terminal:
 
     ```bash
-    your-cli init
+    pdf2wordx
     ```
+
+    The **PDF2WORDX** window will open immediately — a compact 500×300 px interface with a dark navy background. The window is fixed-size and centred on your screen.
   </Step>
-  <Step title="Run it">
-    Show the first thing a user does to see it working.
 
-    ```bash
-    your-cli start
+  <Step title="Name your output file">
+    At the top of the interface you will see a **Nombre Archivo** (File Name) label next to an entry field. This field is pre-populated with the default value:
+
     ```
+    document-pdf2wordx
+    ```
+
+    You can leave it as-is or clear the field and type your preferred filename. Whatever you enter here will become the name of the output `.docx` file (the `.docx` extension is appended automatically).
+
+    <Info>
+      The filename entry field must not be empty when you proceed. If you clear the default and leave the field blank, the output filename will be `.docx` with no base name.
+    </Info>
+  </Step>
+
+  <Step title="Open your PDF">
+    Click the **Abrir Archivo** (Open File) button. A native file-picker dialog will appear, filtered to show only `.pdf` files. Navigate to and select the PDF you want to convert.
+
+    After selecting a file, the label beneath the buttons updates to show the PDF's filename, confirming your selection. The **Elegir Directorio** (Choose Directory) button is now enabled and ready to use.
+  </Step>
+
+  <Step title="Choose an output directory">
+    Click the **Elegir Directorio** (Choose Directory) button. A folder-picker dialog will open. Navigate to the folder where you want the converted `.docx` file to be saved and confirm your selection.
+
+    The interface updates a second label to show the full output path, which is composed of your chosen directory joined with the filename you entered in step 3.
+
+    Once a directory is chosen, the **Convertir** (Convert) button becomes enabled.
+
+    <Warning>
+      The **Convert** button remains disabled until both a PDF file and an output directory have been selected. This is intentional — the application enforces the complete workflow to prevent conversion errors from missing inputs.
+    </Warning>
+  </Step>
+
+  <Step title="Convert the file">
+    Click the **Convertir** (Convert) button. The conversion runs in a background thread so the GUI stays responsive. Two dialogs will appear in sequence:
+
+    1. **An information dialog** confirms that conversion has started, displaying the path of the PDF being processed.
+    2. **A success dialog** — titled "Conversión Exitosa" — confirms that the file was converted successfully and shows the original PDF filename.
+
+    Dismiss both dialogs by clicking **OK**. Your `.docx` file is now in the output directory you chose.
   </Step>
 </Steps>
 
-<Tip>
-  Give people a way to get help. This could be a link to a support page, a chat with a customer support agent, or a forum for your product.
+## What happens next
 
-  Example: Need help? Reach out to us at [support@yourcompany.com](mailto:support@yourcompany.com).
+Your converted `.docx` file is now sitting in the directory you selected. You can open it in any Word-compatible application, including:
+
+- **Microsoft Word** (Windows and macOS)
+- **LibreOffice Writer** (Windows, macOS, and Linux — free and open source)
+- **Google Docs** (via File → Open → upload the `.docx` file)
+- **WPS Office**, **OnlyOffice**, or any other OOXML-compatible editor
+
+The document is fully editable: you can change text, adjust formatting, add or remove content, and save it in any format your editor supports.
+
+<Warning>
+  Large or complex PDFs may take noticeably longer to convert. During conversion, the application displays an info dialog and runs the conversion in a background thread — do not close the application while that dialog is open. Dismissing the window mid-conversion may result in a corrupt or incomplete `.docx` file.
+</Warning>
+
+<Tip>
+  Want a detailed tour of every button, label, and status indicator in the interface? Visit [/guides/gui-walkthrough](/guides/gui-walkthrough) for a full annotated walkthrough of the pdf2wordx GUI.
 </Tip>

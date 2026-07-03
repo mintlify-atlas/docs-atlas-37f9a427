@@ -1,0 +1,221 @@
+---
+title: "Troubleshooting pdf2wordx: Fixes for Common Issues"
+sidebarTitle: "Troubleshooting"
+description: "Solutions to common pdf2wordx problems including conversion errors, missing Tkinter, large file sizes, and content fidelity issues in output documents."
+---
+
+Most issues with pdf2wordx fall into one of four categories: problems installing the package, failures when launching the GUI window, errors that occur during file conversion, and quality concerns about the generated `.docx` output. The sections below cover the most frequently encountered problems in each category along with recommended fixes.
+
+## Installation Issues
+
+<Accordion title="pip install pdf2wordx fails">
+  pdf2wordx requires Python 3.8 through 3.12. If your system has multiple Python versions installed, `pip` may be pointing to an unsupported version.
+
+  **Steps to resolve:**
+
+  <Steps>
+    <Step title="Check your Python version">
+      ```bash
+      python --version
+      ```
+      The output must be between `3.8.x` and `3.12.x`.
+    </Step>
+    <Step title="Try pip3 explicitly">
+      ```bash
+      pip3 install pdf2wordx
+      ```
+    </Step>
+    <Step title="Use the Python module form">
+      ```bash
+      python3 -m pip install pdf2wordx
+      ```
+    </Step>
+    <Step title="Use a virtual environment">
+      ```bash
+      python3 -m venv .venv
+      source .venv/bin/activate   # Windows: .venv\Scripts\activate
+      pip install pdf2wordx
+      ```
+    </Step>
+  </Steps>
+</Accordion>
+
+<Accordion title="pdf2wordx: command not found after installation">
+  pip installs console scripts into a `bin` (Linux/macOS) or `Scripts` (Windows) directory. If that directory is not on your system `PATH`, the `pdf2wordx` command will not be found.
+
+  **Steps to resolve:**
+
+  <Steps>
+    <Step title="Run as a Python module (immediate workaround)">
+      ```bash
+      python -m pdf2wordx
+      ```
+    </Step>
+    <Step title="Find the pip scripts directory">
+      ```bash
+      python -m site --user-base
+      ```
+      Append `/bin` (Linux/macOS) or `\Scripts` (Windows) to that path.
+    </Step>
+    <Step title="Add the scripts directory to PATH">
+      **Linux/macOS** — add to `~/.bashrc` or `~/.zshrc`:
+      ```bash
+      export PATH="$HOME/.local/bin:$PATH"
+      ```
+      **Windows** — add the `Scripts` folder to your user environment variables via System Properties → Advanced → Environment Variables.
+    </Step>
+    <Step title="Reload your shell">
+      ```bash
+      source ~/.bashrc
+      ```
+      Then try `pdf2wordx` again.
+    </Step>
+  </Steps>
+</Accordion>
+
+---
+
+## GUI Launch Issues
+
+<Accordion title="ModuleNotFoundError: No module named 'tkinter'">
+  Tkinter is part of the Python standard library but is shipped as a separate OS package on many Linux distributions. It must be installed at the system level — it cannot be installed via `pip`.
+
+  **Fix by operating system:**
+
+  <Tabs>
+    <Tab title="Ubuntu / Debian">
+      ```bash
+      sudo apt update
+      sudo apt install python3-tk
+      ```
+    </Tab>
+    <Tab title="Fedora / RHEL / CentOS">
+      ```bash
+      sudo dnf install python3-tkinter
+      ```
+    </Tab>
+    <Tab title="Arch Linux">
+      ```bash
+      sudo pacman -S tk
+      ```
+    </Tab>
+    <Tab title="macOS">
+      Tkinter is included with the official Python installer from [python.org](https://www.python.org/downloads/). If you installed Python via Homebrew, run:
+      ```bash
+      brew install python-tk
+      ```
+    </Tab>
+    <Tab title="Windows">
+      Tkinter is bundled with the official Windows Python installer. Re-run the installer and ensure the **tcl/tk and IDLE** optional feature is checked.
+    </Tab>
+  </Tabs>
+
+  After installing, verify Tkinter is available:
+  ```bash
+  python -m tkinter
+  ```
+  A small test window should open.
+</Accordion>
+
+<Accordion title="Window doesn't open / app crashes silently on launch">
+  If the process exits immediately without showing a window or displaying an error message, check the application log file for details.
+
+  **When running from source**, the log is written to:
+  ```
+  ./src/pdf2wordx/log.log
+  ```
+  relative to the project root. Open that file in any text editor to find the exception that was caught and recorded by `chromologger`.
+
+  Common causes include a missing `favicon.ico` (the app expects `./src/pdf2wordx/favicon.ico`), a Python version outside the supported range, or a corrupt or incomplete installation. If the log file does not exist or is empty, try running the entry module directly to see any uncaught traceback:
+
+  ```bash
+  python ./src/pdf2wordx/_pdf2wordx.py
+  ```
+</Accordion>
+
+---
+
+## Conversion Errors
+
+<Accordion title="Dialog: 'Error En Conversión De Archivo'">
+  This dialog is shown when an exception is raised inside `Funcs._convertFile()`. The underlying cause is passed to `logger.log_e(e)` and written to `log.log`.
+
+  **Common causes:**
+
+  - The PDF is **password-protected or encrypted** — pdf2docx cannot open encrypted PDFs without the password.
+  - The PDF is **corrupted** — try opening it in a PDF viewer to confirm it is valid.
+  - The PDF uses a **format or feature not supported** by pdf2docx (e.g., certain PDF/A variants or heavily compressed streams).
+
+  **Steps to resolve:**
+
+  <Steps>
+    <Step title="Check the log file">
+      Open `./src/pdf2wordx/log.log` to read the exact exception message.
+    </Step>
+    <Step title="Test with a different PDF">
+      Try converting a simple, unencrypted PDF to determine whether the problem is file-specific.
+    </Step>
+    <Step title="Remove PDF encryption">
+      If the PDF is password-protected, use a PDF editor to remove the password before converting.
+    </Step>
+  </Steps>
+</Accordion>
+
+<Accordion title="Dialog: 'Error Selección Archivo'">
+  This error appears when the file picker dialog is dismissed without selecting a file, or when the selected file cannot be processed by `filedialog.askopenfilename()`.
+
+  **Fix:** Click **Abrir Archivo** (Open File) again and select a valid `.pdf` file. Make sure you do not press **Cancel** in the file picker.
+</Accordion>
+
+<Accordion title="Dialog: 'Error Selección Directorio'">
+  This error appears when the directory picker dialog is closed without selecting a folder, or when the selected path string cannot be processed.
+
+  **Fix:** Click **Elegir Directorio** (Choose Directory) again and select a valid output folder. Ensure the folder exists and that you have write permissions for it.
+</Accordion>
+
+---
+
+## Output Quality Issues
+
+<Accordion title="Output .docx has strange colors, garbled text, or wrong fonts">
+  PDF-to-Word conversion is inherently imperfect. PDFs store content as positioned elements with embedded fonts, which do not map cleanly to the paragraph-and-style model of a Word document. Complex layouts, non-standard encodings, transparency effects, or unusual font embedding can all cause rendering artifacts in the output.
+
+  This is a known limitation documented in the pdf2wordx README:
+
+  > *"There may be errors in the content of the DOCX (strange colors, incoherent texts, and even content loss) due to the original content of the PDF (which could be complicated to replicate)."*
+
+  **Workarounds:**
+  - Try converting a simpler or text-only PDF to verify the converter is working.
+  - Open the `.docx` in Microsoft Word or LibreOffice and manually correct formatting after conversion.
+  - If the source PDF was generated from a Word document, consider using the original `.docx` file instead of reconverting.
+</Accordion>
+
+<Accordion title="Output .docx file is very large">
+  PDFs that contain many high-resolution images, complex vector graphics, or a large number of pages will produce correspondingly large `.docx` files after conversion. pdf2wordx embeds image data from the PDF directly into the Word document.
+
+  This is expected behavior, as noted in the README:
+
+  > *"docx files in this case can be large (MB)"*
+
+  **Workarounds:**
+  - Compress the source PDF before converting (reduce image resolution or re-export from the source application at a lower quality setting).
+  - Use Word's **Compress Pictures** feature on the output document after conversion.
+</Accordion>
+
+<Accordion title="Some content is missing from the output .docx">
+  Certain PDF content types are not supported by the underlying `pdf2docx` library and will be silently omitted from the output:
+
+  - **Interactive forms** (AcroForms, XFA forms)
+  - **Annotations and comments**
+  - **Digital signatures**
+  - **Embedded multimedia** (audio, video)
+  - **JavaScript actions**
+
+  Only convertible text and image content is written to the `.docx` file.
+</Accordion>
+
+---
+
+<Tip>
+  If none of the solutions above resolve your issue, open a bug report at [https://github.com/dev2forge/pdf2wordx/issues](https://github.com/dev2forge/pdf2wordx/issues). Include the full error message from `log.log`, your Python version (`python --version`), your operating system, and the pdf2wordx version (`pip show pdf2wordx`).
+</Tip>

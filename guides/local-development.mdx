@@ -1,0 +1,177 @@
+---
+title: "Run pdf2wordx Locally from Source Code"
+sidebarTitle: "Local Development"
+description: "Clone the pdf2wordx repository, install dependencies, and run the app from source. Covers project structure and how to modify the codebase."
+---
+
+Developers can run pdf2wordx directly from its source code without installing the package from PyPI. This is the recommended approach when contributing fixes, adding features, or simply customizing the application for personal use. All you need is Python, a terminal, and the two runtime dependencies listed in `requirements.txt`. The setup takes under two minutes on a machine that already has Python installed.
+
+<Tip>
+  Use a **virtual environment** to isolate pdf2wordx's dependencies from your system-wide Python packages. This avoids version conflicts with other projects and keeps your global environment clean. A virtual environment is especially important if you have other projects that depend on different versions of `pdf2docx`.
+</Tip>
+
+---
+
+## Setup
+
+<Steps>
+  <Step title="Clone the repository">
+    Clone the pdf2wordx repository from GitHub and navigate into the project directory:
+
+    ```bash
+    git clone https://github.com/dev2forge/pdf2wordx.git
+    cd pdf2wordx
+    ```
+
+    <Note>
+      Run all subsequent commands from the **root of the cloned repository** (the `pdf2wordx/` directory). The entry point script uses paths relative to this root, such as `./src/pdf2wordx/favicon.ico` and `./src/pdf2wordx/log.log`.
+    </Note>
+  </Step>
+
+  <Step title="(Optional) Create and activate a virtual environment">
+    Create a virtual environment named `.venv` in the project root:
+
+    ```bash
+    python -m venv .venv
+    ```
+
+    Then activate it for your platform:
+
+    <CodeGroup>
+      ```bash macOS / Linux
+      source .venv/bin/activate
+      ```
+
+      ```powershell Windows (PowerShell)
+      .venv\Scripts\Activate.ps1
+      ```
+    </CodeGroup>
+
+    You should see the `(.venv)` prefix appear in your terminal prompt, confirming the environment is active.
+  </Step>
+
+  <Step title="Install dependencies">
+    Install the two runtime dependencies declared in `requirements.txt`:
+
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+    This installs:
+
+    | Package | Version | Purpose |
+    |---|---|---|
+    | `pdf2docx` | `0.5.8` | Core PDF-to-Word conversion engine |
+    | `chromologger` | `0.1.8` | Lightweight file logger used for error tracking |
+
+    Tkinter itself is part of the Python standard library and does not need to be installed via pip. On some Linux distributions, you may need to install it separately with your system package manager (e.g., `sudo apt install python3-tk`).
+  </Step>
+
+  <Step title="Run the application">
+    Launch the app from the repository root:
+
+    ```bash
+    python ./src/pdf2wordx/_pdf2wordx.py
+    ```
+
+    The pdf2wordx window should appear, centered on your screen, ready to use.
+
+    <Note>
+      The entry point when running from source is `./src/pdf2wordx/_pdf2wordx.py`, **not** `src/pdf2wordx/__init__.py`. The `__init__.py` only exports the `run()` function for use when pdf2wordx is installed as a package.
+    </Note>
+  </Step>
+</Steps>
+
+---
+
+## Project structure
+
+The entire application lives under `src/pdf2wordx/`. Here is the full source layout:
+
+```
+src/pdf2wordx/
+├── _pdf2wordx.py      # App entry point, App class
+├── __init__.py        # Package init, exports run()
+├── favicon.ico        # Application icon
+└── files/
+    ├── __init__.py
+    ├── functions.py   # Funcs class — file dialogs, conversion logic
+    ├── interfaz.py    # Window and Widgets classes
+    └── info/
+        ├── help       # Help dialog text
+        └── NOTICE     # Open-source license notice
+```
+
+A `log.log` file is created at `./src/pdf2wordx/log.log` the first time the application runs and is used to record runtime errors via `chromologger`.
+
+---
+
+## Key modules
+
+<AccordionGroup>
+  <Accordion title="_pdf2wordx.py — Application entry point">
+    This is the top-level module and the file you run directly. It defines the `App` class, which inherits from `Window` (defined in `files/interfaz.py`). The `App.__init__()` constructor:
+
+    - Sets the window dimensions (`500×300`), background color (`#001223`), and title (`'PDF2WORDX'`).
+    - Loads the application icon from `favicon.ico`.
+    - Instantiates `Funcs` for business logic and `Widgets` for widget management.
+    - Defines all 12 widget configurations in `op_elements` and their placement coordinates in `pack_op`.
+    - Inserts the default filename `document-pdf2wordx` into the entry field.
+
+    Each button's `command` is wired to a method on `App` (`self.fileSet`, `self.fileOutSet`, `self.convertFile`, `self.help`, `self.osl`), which in turn delegate to the appropriate `Funcs` methods.
+
+    The module-level `run()` function instantiates `App` with a fresh `Tk()` root and calls `app.loopWindow()` to enter the Tkinter main loop. This is the function exported by `__init__.py` for PyPI installs.
+
+    ```python
+    def run():
+        app = App(Tk(), 500, 300, '#001223', 'PDF2WORDX', [False, False])
+        app.loopWindow()
+
+    if __name__ == "__main__":
+        run()
+    ```
+  </Accordion>
+
+  <Accordion title="files/interfaz.py — Window and Widgets classes">
+    Contains two classes that abstract away Tkinter boilerplate:
+
+    **`Window`** — Sets up the root `Tk` window with the given dimensions, background color, title, and resizability flags. Its private `__centerWindow()` method calculates the screen dimensions at runtime and returns an offset geometry string so the window always opens at the center of the display:
+
+    ```python
+    def __centerWindow(self) -> str:
+        screenWidth  = self.root.winfo_screenwidth()
+        screenHeight = self.root.winfo_screenheight()
+        winWidthCenter  = (screenWidth  - self.width)  // 2
+        winHeightCenter = (screenHeight - self.height) // 2
+        return f'+{winWidthCenter}-{winHeightCenter}'
+    ```
+
+    **`Widgets`** — Manages dynamic widget creation and placement. Given a list of widget types (e.g., `[Label, Button, Entry, ...]`), a list of option dicts, and a list of placement dicts, `widgetsCreate()` instantiates each widget, stores it in `widgetsList`, and places it on the canvas using Tkinter's `place` geometry manager. The `getText(pos)` helper reads the current value from any `Entry` widget by index.
+  </Accordion>
+
+  <Accordion title="files/functions.py — Funcs class (business logic)">
+    All application logic that is not pure UI lives in the `Funcs` class:
+
+    | Method | Responsibility |
+    |---|---|
+    | `_askFile(button)` | Opens a PDF file picker; stores the selected path and base name; enables the next button. |
+    | `_fileNameOut(txt)` | Constructs the output filename by appending `.docx` to the entry field value. |
+    | `_askDirOut(button)` | Opens a directory picker; assembles the full output path; enables the Convert button. |
+    | `_convertFile(button)` | **Async.** Instantiates `pdf2docx.Converter`, calls `.convert()`, closes it, and disables the action buttons on success. |
+    | `_setTextLabel(label, prefix, txt)` | Updates a `Label` widget's text to display status information. |
+    | `_activeButton(button)` | Calls `button.configure(state='normal')` to enable a disabled button. |
+    | `_disableButton(button)` | Accepts a single `Button` or a `list` of `Button` objects and sets each to `state='disabled'`. |
+    | `msgbox(path, win_title)` | Reads a plain-text file from `path` and displays its content in a `showinfo` dialog. |
+
+    Errors in all methods are caught, logged to `log.log` via `chromologger`, and surfaced to the user as `showerror` dialogs.
+  </Accordion>
+
+  <Accordion title="files/info/ — Help text and license notice">
+    Two plain-text resource files are read at runtime by `Funcs.msgbox()`:
+
+    - **`help`** — Contains the four-step usage instructions shown when the user clicks the "Ayuda" (Help) button.
+    - **`NOTICE`** — Contains the open-source attribution notice for the libraries used by pdf2wordx, shown when the user clicks the "OSL" button.
+
+    Both files are opened with `encoding='utf-8'` and their full contents are passed directly to `tkinter.messagebox.showinfo()`.
+  </Accordion>
+</AccordionGroup>

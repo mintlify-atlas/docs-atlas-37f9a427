@@ -1,0 +1,191 @@
+---
+title: "GUI Walkthrough: Every Control in pdf2wordx"
+sidebarTitle: "GUI Walkthrough"
+description: "A complete tour of the pdf2wordx interface — every button, label, and entry field explained with its purpose and behavior."
+---
+
+pdf2wordx presents a clean, purposefully compact interface built entirely with Python's Tkinter toolkit. The main window is a fixed **500×300 pixel** frame with a deep navy background (`#001223`) that cannot be resized by the user. All twelve UI elements — labels, buttons, and a single entry field — are positioned using Tkinter's absolute `place` geometry manager with relative coordinates, giving the layout precise and predictable placement across operating systems. Every widget is created and managed by the `Widgets` class in `files/interfaz.py`, while the `App` class in `_pdf2wordx.py` wires each interactive element to its corresponding action.
+
+<Note>
+  The window is **not resizable** in either direction — both horizontal and vertical resizing are disabled via `root.resizable(False, False)`. On launch, the window is automatically centered on the screen using the `Window.__centerWindow()` method, which calculates the screen dimensions and positions the window at the exact midpoint.
+</Note>
+
+---
+
+## Top Bar
+
+The top bar contains the application identity and two utility buttons, all sitting at approximately 5% from the top of the window.
+
+<Accordion title="Title Label — &quot;PDF2WORDX - SRM&quot;">
+  **Type:** `Label`
+
+  The title label is the first element rendered in the window and serves as the application name display. It renders the text **"PDF2WORDX - SRM"** in bold Helvetica at 20pt, with white text on the dark `#001223` background. It is purely decorative and carries no interactive behavior. It is placed at roughly the horizontal center of the window (`relx: 0.23`) aligned to the top bar.
+
+  ```python
+  {'text':'PDF2WORDX - SRM', 'font':('Helvetica', 20, 'bold'), 'bg':'#001223', 'fg':'white'}
+  ```
+</Accordion>
+
+<Accordion title="Help Button — &quot;Ayuda&quot;">
+  **Type:** `Button`  
+  **Command:** `App.help()` → `Funcs.msgbox('./src/pdf2wordx/files/info/help', '¿Cómo usar este programa?')`
+
+  Positioned at the far left of the top bar (`relx: 0.02`), the Help button opens a Tkinter `showinfo` message dialog titled **"¿Cómo usar este programa?"** (How to use this program?). The dialog body is read directly from the `files/info/help` plain-text file at runtime. The help text contains four numbered steps guiding the user through the full conversion workflow:
+
+  1. Type a name to save the file.
+  2. Select a PDF file using the "Archivo PDF" button.
+  3. Choose an output directory using "Elegir directorio".
+  4. Press the "Convertir" button.
+
+  The button is styled with a lime-green foreground (`#66ff02`) on the dark background and uses a `sunken` relief style to give it a subtle inset appearance.
+
+  ```python
+  {'text':'Ayuda', 'bg':'#001223', 'width':4, 'height':1, 'fg':'#66ff02', 'relief':'sunken', 'command':self.help}
+  ```
+</Accordion>
+
+<Accordion title="OSL Button — &quot;OSL&quot;">
+  **Type:** `Button`  
+  **Command:** `App.osl()` → `Funcs.msgbox('./src/pdf2wordx/files/info/NOTICE', 'Open Source Licenses - Notice')`
+
+  Sitting just to the right of the Help button (`relx: 0.1`), the OSL (Open Source Licenses) button opens an informational dialog titled **"Open Source Licenses - Notice"**. The content is read from the `files/info/NOTICE` file, which contains the open-source attribution notices for the libraries bundled with pdf2wordx. Like the Help button, it shares the same lime-green / dark styling and `sunken` relief.
+
+  ```python
+  {'text':'OSL', 'bg':'#001223', 'width':4, 'height':1, 'fg':'#66ff02', 'relief':'sunken', 'command':self.osl}
+  ```
+</Accordion>
+
+---
+
+## File Name Row
+
+Located at approximately 23% from the top, this row lets users configure the output filename before selecting any files.
+
+<Accordion title="&quot;Nombre Archivo:&quot; Label">
+  **Type:** `Label`
+
+  A static white-on-dark label that reads **"Nombre Archivo:"** (File Name:). It acts as the visual prompt for the entry field immediately to its right, positioned at `relx: 0.23, rely: 0.23`.
+
+  ```python
+  {'text':'Nombre Archivo: ', 'bg':'#001223', 'fg':'white'}
+  ```
+</Accordion>
+
+<Accordion title="Filename Entry Field">
+  **Type:** `Entry`
+
+  The filename entry field is the only text-input control in the application. It is pre-populated on startup with the default value **`document-pdf2wordx`** via `widget.widgetsList[4].insert(0, 'document-pdf2wordx')`. Users can clear this value and type any desired output filename — **without** the `.docx` extension, which is appended automatically during the conversion setup step.
+
+  The field is styled with a dark indigo background (`#13004d`), bright yellow text (`#ffdd02`), and bold 12pt Consolas font, making it visually distinct from the surrounding labels. It is placed at `relx: 0.43, rely: 0.23`.
+
+  ```python
+  {'bg':'#13004d', 'fg':'#ffdd02', 'font':('Consolas', 12, 'bold'), 'justify':'center'}
+  ```
+</Accordion>
+
+---
+
+## Action Buttons Row
+
+The three primary action buttons are aligned horizontally at approximately 35% from the top of the window, each gated so they only become active when the preceding step has been completed.
+
+<Accordion title="Open File Button — &quot;Abrir Archivo&quot;">
+  **Type:** `Button`  
+  **Command:** `App.fileSet()` → `Funcs._askFile(button)`
+
+  The **"Abrir Archivo"** (Open File) button opens a native OS file picker dialog filtered exclusively to `.pdf` files (`filetypes=[('Seleccionar PDF: ', '*.pdf')]`). Once the user selects a valid PDF, two things happen:
+
+  - The selected file's base name (without the directory path) is extracted via `os.path.basename()` and stored in `self.funcs.file_name_original`.
+  - The **"Elegir Directorio"** (Choose Directory) button is enabled by calling `Funcs._activeButton(button)`.
+
+  The button uses a bright yellow-green background (`#d1ff00`) with bold Helvetica text and remains active throughout the session — users can click it again to select a different PDF.
+
+  ```python
+  {'text':'Abrir Archivo', 'bg':'#d1ff00', 'width':15, 'pady':5, 'padx':3,
+   'font':('Helvetica', -12, 'bold'), 'command':self.fileSet}
+  ```
+</Accordion>
+
+<Accordion title="Choose Directory Button — &quot;Elegir Directorio&quot;">
+  **Type:** `Button`  
+  **Initial state:** `disabled`  
+  **Command:** `App.fileOutSet()` → `Funcs._fileNameOut(entry)` + `Funcs._askDirOut(button)`
+
+  The **"Elegir Directorio"** (Choose Directory) button is **disabled** when the application launches and only becomes clickable after a PDF file has been successfully selected. When clicked, it performs two operations in sequence:
+
+  1. Reads the current text from the filename entry field and constructs the full output filename by appending `.docx` (e.g., `document-pdf2wordx.docx`), stored in `self.funcs.file_name_out`.
+  2. Opens a native OS directory picker dialog. The selected directory path is combined with the output filename and stored in `self.funcs.directory_out`. The **"Convertir"** (Convert) button is then enabled.
+
+  ```python
+  {'text':'Elegir Directorio', 'bg':'#d1ff00', 'width':15, 'pady':5, 'padx':3,
+   'font':('Helvetica', -12, 'bold'), 'command':self.fileOutSet, 'state':'disabled'}
+  ```
+</Accordion>
+
+<Accordion title="Convert Button — &quot;Convertir&quot;">
+  **Type:** `Button`  
+  **Initial state:** `disabled`  
+  **Command:** `App.convertFile()` → `Funcs._convertFile(buttons)` (async, in background thread)
+
+  The **"Convertir"** (Convert) button is the final action trigger. It remains **disabled** until both a PDF file and an output directory have been chosen. Clicking it spawns a background `threading.Thread` that runs `asyncio.run(self.funcs._convertFile(buttons))`, keeping the Tkinter UI responsive while the conversion is in progress.
+
+  Upon completion, both the "Open File" and "Convert" buttons are disabled to prevent duplicate conversions. The output directory path label is also updated to reflect the chosen save location.
+
+  ```python
+  {'text':'Convertir', 'bg':'#d1ff00', 'width':15, 'pady':5, 'padx':3,
+   'font':('Helvetica', -12, 'bold'), 'command':self.convertFile, 'state':'disabled'}
+  ```
+</Accordion>
+
+---
+
+## Information Labels
+
+Three read-only status labels sit below the button row (at approximately 48%, 57%, and 65% from the top). They are all initially set to short placeholder strings and are updated by `Funcs._setTextLabel()` as the user progresses through the workflow.
+
+<Accordion title="PDF File Info Label — &quot;Archivo PDF:&quot;">
+  **Type:** `Label`  
+  **Updated by:** `App.fileSet()` after a PDF is selected
+
+  Displays the base filename of the selected PDF, prefixed with `"Archivo PDF: "`. For example, after selecting `my-report.pdf`, this label reads **"Archivo PDF: my-report.pdf"**. It is left-aligned (`anchor='w'`) with a fixed width of 54 characters, placed at `relx: 0.13, rely: 0.48`.
+
+  ```python
+  {'text':'Archivo PDF: ', 'bg':'#001223', 'fg':'white', 'anchor':'w', 'width':54}
+  ```
+</Accordion>
+
+<Accordion title="Output File Info Label — &quot;Archivo De Salida:&quot;">
+  **Type:** `Label`  
+  **Updated by:** `App.fileOutSet()` after a directory is chosen
+
+  Displays the configured output `.docx` filename, prefixed with `"Archivo De Salida: "`. For example: **"Archivo De Salida: document-pdf2wordx.docx"**. Also left-aligned at `relx: 0.13, rely: 0.568`.
+
+  ```python
+  {'text':'Archivo De Salida: ', 'bg':'#001223', 'fg':'white', 'anchor':'w', 'width':54}
+  ```
+</Accordion>
+
+<Accordion title="Output Directory Info Label — &quot;Directorio De Salida:&quot;">
+  **Type:** `Label`  
+  **Updated by:** `App.convertFile()` after conversion is triggered
+
+  Displays the full output directory path where the `.docx` will be saved, prefixed with `"Directorio De Salida: "`. This label is updated at the moment the Convert button is pressed, so the user can see exactly where their file was written. Placed at `relx: 0.13, rely: 0.65`.
+
+  ```python
+  {'text':'Directorio De Salida: ', 'bg':'#001223', 'fg':'white', 'anchor':'w', 'width':54}
+  ```
+</Accordion>
+
+---
+
+## Footer
+
+<Accordion title="Copyright Label — &quot;© SRM - TRG 2024&quot;">
+  **Type:** `Label`
+
+  A small copyright notice rendered in 7pt bold Consolas at the very bottom of the window (`relx: 0.4, rely: 0.95`). It displays **"© SRM - TRG 2024"** in white text on the dark background and is purely informational.
+
+  ```python
+  {'text':'© SRM - TRG 2024', 'bg':'#001223', 'font':('Consolas', 7, 'bold'), 'fg':'white'}
+  ```
+</Accordion>

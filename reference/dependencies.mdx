@@ -1,0 +1,102 @@
+---
+title: "pdf2wordx Dependencies and Third-Party Licenses"
+sidebarTitle: "Dependencies"
+description: "The Python packages that pdf2wordx depends on, their roles, version constraints, and open-source license information."
+---
+
+pdf2wordx has two runtime dependencies beyond the Python standard library: `pdf2docx`, which performs the actual PDF-to-DOCX conversion, and `chromologger`, which handles error logging. Both are automatically installed when you run `pip install pdf2wordx`. The sections below describe each package's role in the application, where it is used in the source code, and its licensing terms.
+
+## Runtime Dependencies
+
+### pdf2docx (>=0.5.8)
+
+`pdf2docx` is the core conversion engine that powers pdf2wordx. It parses PDF files and reconstructs their content as editable `.docx` documents. Without this library, no conversion would be possible.
+
+**Role in pdf2wordx:** Used in `Funcs._convertFile()` inside `files/functions.py`. The conversion sequence is:
+
+```python
+from pdf2docx import Converter
+
+converter = Converter(self.file)          # Open the source PDF
+converter.convert(self.directory_out)     # Convert and write to output path
+converter.close()                         # Release the file handle
+```
+
+The call to `converter.convert()` is wrapped in `asyncio.sleep()` so the blocking operation runs without freezing the Tkinter event loop, which itself runs in a separate `Thread`.
+
+- **Developed by:** ArtifexSoftware
+- **License:** GNU Affero General Public License v3.0 (AGPL-3.0), as acknowledged in the in-app NOTICE file
+- **Minimum version required:** `>=0.5.8`
+- **PyPI:** [https://pypi.org/project/pdf2docx/](https://pypi.org/project/pdf2docx/)
+
+### chromologger (>=0.1.4)
+
+`chromologger` is a lightweight logging utility used throughout pdf2wordx to record exceptions to a persistent log file. This makes it possible to diagnose errors that occur silently inside the application without a visible traceback.
+
+**Role in pdf2wordx:** A `Logger` instance is created at module level in both `_pdf2wordx.py` and `files/functions.py`:
+
+```python
+from chromologger import Logger
+
+logger: Logger = Logger('./src/pdf2wordx/log.log')
+```
+
+Whenever an exception is caught in a `try/except` block, it is forwarded to the logger:
+
+```python
+except Exception as e:
+    logger.log_e(e)
+```
+
+The log file is written to `log.log` in the package directory. When running from source, this resolves to `./src/pdf2wordx/log.log` relative to the project root.
+
+- **Minimum version required:** `>=0.1.4`
+- **PyPI:** [https://pypi.org/project/chromologger/](https://pypi.org/project/chromologger/)
+
+## Standard Library Dependencies
+
+pdf2wordx also relies on the following modules from the Python standard library. These are included with every standard Python installation and do not need to be installed separately.
+
+| Module | Usage |
+|---|---|
+| `tkinter` | GUI framework — all windows, buttons, labels, and dialogs |
+| `threading` | Runs the conversion in a background `Thread` to keep the UI responsive |
+| `asyncio` | Wraps the blocking `Converter.convert()` call inside `asyncio.run()` |
+| `os` | Extracts the base filename from a full file path via `os.path.basename()` |
+
+## Python Version Support
+
+pdf2wordx officially supports the following CPython versions, as declared in `pyproject.toml`:
+
+<CardGroup cols={5}>
+  <Card title="Python 3.8" />
+  <Card title="Python 3.9" />
+  <Card title="Python 3.10" />
+  <Card title="Python 3.11" />
+  <Card title="Python 3.12" />
+</CardGroup>
+
+Python versions below 3.8 and 3.13 or later are **not supported**. The `pyproject.toml` specifies `requires-python = ">=3.8,<3.13"`, so pip will refuse to install pdf2wordx outside that range.
+
+## Third-Party License Notice
+
+<Note>
+  pdf2wordx ships with a NOTICE file (accessible inside the app via the **OSL** button) that reads:
+
+  > *"Este proyecto integra funcionalidad de pdf2docx (ArtifexSoftware) bajo GNU Affero General Public License v3.0 o posterior. Agradecimientos especiales al equipo de pdf2docx por su dedicación y esfuerzo: sin su biblioteca, la conversión fiable y gratuita de PDF a DOCX no habría sido posible."*
+
+  In English: pdf2wordx integrates functionality from pdf2docx (ArtifexSoftware) under the GNU Affero General Public License v3.0 or later, and credits the pdf2docx team for making reliable, free PDF-to-DOCX conversion possible.
+</Note>
+
+## `requirements.txt`
+
+The pinned versions used for local development are:
+
+```text
+pdf2docx==0.5.8
+chromologger==0.1.8
+```
+
+<Info>
+  The `requirements.txt` file pins exact versions for reproducible local development. The `pyproject.toml` uses minimum-version constraints (`>=`) so that users installing from PyPI can receive compatible newer releases.
+</Info>

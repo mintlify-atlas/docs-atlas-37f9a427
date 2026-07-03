@@ -1,0 +1,144 @@
+---
+title: "Converting PDFs to Word Documents with pdf2wordx"
+sidebarTitle: "Conversion"
+description: "Step-by-step guide to converting a PDF to .docx with pdf2wordx, including output naming, directory selection, and what to expect from the result."
+---
+
+pdf2wordx uses the [`pdf2docx`](https://pypi.org/project/pdf2docx/) library (version **0.5.8**) to parse PDF structure and reproduce it as an editable Microsoft Word document. The `pdf2docx` library reads the PDF's internal page data — including text blocks, images, and layout geometry — and maps them to Word-compatible constructs stored in the `.docx` Open XML format. The conversion is initiated from within the `Funcs` class in `files/functions.py` and runs asynchronously so that the Tkinter interface stays fully responsive while a potentially large document is being processed.
+
+<Warning>
+  Converting very large or complex PDF files may produce `.docx` output files that are significantly larger than the original PDF. Additionally, due to the inherent complexity of replicating certain PDF layouts, the resulting Word document may contain **strange colors**, **incoherent or missing text**, or **layout differences** compared to the original. These are known limitations of the `pdf2docx` conversion engine, not bugs in pdf2wordx itself. Always review the converted document before use.
+</Warning>
+
+---
+
+## Step-by-step conversion
+
+<Steps>
+  <Step title="Set your output filename">
+    When the app launches, the filename entry field is already pre-populated with `document-pdf2wordx`. You can leave this default or clear the field and type your preferred name.
+
+    **Do not include the `.docx` extension** — it is appended automatically. Whatever text is in the entry field at the moment you click "Choose Directory" becomes the final filename. For example, typing `my-report` will produce `my-report.docx`.
+
+    ```python
+    # From _pdf2wordx.py — the default value inserted at startup
+    self.widget.widgetsList[4].insert(0, 'document-pdf2wordx')
+    ```
+  </Step>
+
+  <Step title="Click &quot;Abrir Archivo&quot; (Open File) to select a PDF">
+    Click the yellow-green **"Abrir Archivo"** button to open the native OS file picker. The dialog is pre-filtered to show only `.pdf` files:
+
+    ```python
+    # From files/functions.py — Funcs._askFile()
+    file = self.filedialog.askopenfilename(filetypes=[('Seleccionar PDF: ', '*.pdf')])
+    ```
+
+    After you select a valid file:
+    - The PDF's base filename is extracted with `os.path.basename()` and stored in `self.file_name_original`.
+    - The **"Elegir Directorio"** button is enabled automatically.
+    - The **"Archivo PDF:"** info label at the bottom of the window updates to show the selected filename.
+
+    If no file is chosen (the dialog is cancelled), no state changes occur.
+  </Step>
+
+  <Step title="Click &quot;Elegir Directorio&quot; (Choose Directory) to pick an output folder">
+    This button becomes active only after a PDF has been selected. Clicking it triggers two sequential actions:
+
+    1. The current text in the filename entry field is read and combined with the `.docx` extension to form the output filename:
+       ```python
+       # From files/functions.py — Funcs._fileNameOut()
+       self.file_name_out = f'{txt}.docx'
+       ```
+    2. A native OS directory picker opens, titled **"Busca la ruta de salida del archivo"**. The full output path is constructed by joining the chosen directory and the output filename:
+       ```python
+       # From files/functions.py — Funcs._askDirOut()
+       self.directory_out = str(filedialog.askdirectory(...)) + '/' + self.file_name_out
+       ```
+
+    After a valid directory is chosen:
+    - The **"Convertir"** button is enabled.
+    - The **"Archivo De Salida:"** info label updates to show the configured output filename.
+  </Step>
+
+  <Step title="Click &quot;Convertir&quot; (Convert) to start the conversion">
+    With both a source PDF and an output directory configured, click **"Convertir"** to begin. Two dialogs appear in sequence:
+
+    1. **Info dialog** — immediately shows: `"Convirtiendo <full path to pdf>"`, confirming that the process has started.
+    2. **Success dialog** — once the conversion finishes, a second dialog confirms: `"Se ha convertido el archivo <filename> exitosamente"`.
+
+    The **"Directorio De Salida:"** label also updates at this point to display the full save path, so you always know where to find your file.
+  </Step>
+</Steps>
+
+---
+
+## Under the hood
+
+The core conversion logic lives in the `Funcs._convertFile()` async method inside `files/functions.py`. When the Convert button is clicked, `App.convertFile()` in `_pdf2wordx.py` launches it inside a dedicated background thread wrapped in `asyncio.run()`:
+
+```python
+# From _pdf2wordx.py — App.convertFile()
+Thread(target=lambda: asyncio.run(self.funcs._convertFile(buttons))).start()
+```
+
+Inside `_convertFile()`, the `pdf2docx.Converter` class is instantiated with the path of the selected PDF, `convert()` is called with the full output path, and then the converter is closed cleanly:
+
+```python
+# From files/functions.py — Funcs._convertFile()
+async def _convertFile(self, button) -> None:
+    try:
+        convertFile = Converter(self.file)
+        messagebox.showinfo("Información", f'Convirtiendo {self.file}')
+        await asyncio.sleep(1, result=convertFile.convert(self.directory_out))
+        convertFile.close()
+        self._disableButton(button)
+        messagebox.showinfo('Conversión Exitosa',
+            f'Se ha convertido el archivo {self.file_name_original} exitosamente')
+    except Exception as e:
+        logger.log_e(e)
+        messagebox.showerror('Error En Conversión De Archivo',
+            'Hubo un error convirtiendo el archivo, intente nuevamente')
+```
+
+Running the conversion in a background thread via `threading.Thread` ensures the Tkinter main loop is never blocked, keeping the window responsive while `pdf2docx` processes the document.
+
+---
+
+## Output file format
+
+<CardGroup cols={2}>
+  <Card title="File type" icon="file-word">
+    The output is always a `.docx` file — the standard Open XML format used by Microsoft Word and compatible editors such as LibreOffice Writer and Google Docs.
+  </Card>
+  <Card title="Filename" icon="tag">
+    The filename is derived from the entry field value at the time "Choose Directory" is clicked, with `.docx` appended automatically. For example, `report` → `report.docx`.
+  </Card>
+  <Card title="Save location" icon="folder-open">
+    The file is written to the exact directory path selected via the directory picker. The full path (directory + filename) is visible in the **"Directorio De Salida:"** label after conversion.
+  </Card>
+  <Card title="File size" icon="database">
+    Output `.docx` files may be considerably larger than the source PDF, particularly when the PDF contains embedded images or complex vector graphics.
+  </Card>
+</CardGroup>
+
+---
+
+## After conversion
+
+Once a conversion completes successfully, the `Funcs._disableButton()` method disables both the **"Abrir Archivo"** and **"Convertir"** buttons:
+
+```python
+# From files/functions.py — Funcs._disableButton()
+def _disableButton(self, button: Button | list) -> None:
+    if type(button) == list:
+        for item in button:
+            if type(item) == Button:
+                getattr(item, 'configure')(state='disabled')
+```
+
+This prevents accidental re-conversion of the same file. To convert another PDF, **restart the application** — simply close the window and relaunch pdf2wordx. There is no in-app "reset" or "convert another file" action.
+
+<Info>
+  If an error occurs during conversion (for example, a corrupted PDF or an inaccessible output directory), a `showerror` dialog is displayed and the error is logged to `./src/pdf2wordx/log.log` via the `chromologger` logger. The buttons are **not** disabled in this case, so you can fix the issue and try again without restarting.
+</Info>
